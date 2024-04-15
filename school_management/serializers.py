@@ -30,9 +30,19 @@ class TopicSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class SubtopicSerializer(serializers.ModelSerializer):
+    goals = serializers.SerializerMethodField()  # Изменяем на метод
+
     class Meta:
         model = Subtopic
-        fields = '__all__'
+        fields = ['id', 'name', 'topic_id', 'goals']
+
+    def get_goals(self, obj):
+        # Фильтрация goals в зависимости от параметра goal_id в запросе
+        goals = obj.goals.all()
+        goal_id = self.context['request'].query_params.get('goal_id')
+        if goal_id:
+            goals = goals.filter(id=goal_id)
+        return GoalSerializer(goals, many=True).data
 
 class TaskSerializer(serializers.ModelSerializer):
     class Meta:

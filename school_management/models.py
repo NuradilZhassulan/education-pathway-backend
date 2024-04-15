@@ -24,6 +24,7 @@ class Topic(models.Model):
 class Subtopic(models.Model):
     name = models.CharField(max_length=255)
     topic_id = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='subtopics')
+    goals = models.ManyToManyField(Goal, blank=True, related_name='subtopics')  # ManyToMany связь с Goal
 
 #Задача
 class Task(models.Model):
