@@ -1,6 +1,6 @@
 from rest_framework import viewsets
-from .models import Goal, Class, Section, Topic, Subtopic, Task
-from .serializers import GoalSerializer, ClassSerializer, SectionSerializer, TopicSerializer, SubtopicSerializer, TaskSerializer
+from .models import Goal, Class, Section, Topic, Subtopic, KeyboardElement, Task, Test, TaskInTest
+from .serializers import GoalSerializer, ClassSerializer, SectionSerializer, TopicSerializer, SubtopicSerializer, KeyboardElementSerializer, TaskSerializer, TestSerializer, TaskInTestSerializer
 from django_filters import rest_framework as filters
 
 class GoalViewSet(viewsets.ModelViewSet):
@@ -79,7 +79,27 @@ class SubtopicViewSet(viewsets.ModelViewSet):
 
     def get_serializer_context(self):
         return {'request': self.request}
+
+class KeyboardElementViewSet(viewsets.ModelViewSet):
+    queryset = KeyboardElement.objects.all()
+    serializer_class = KeyboardElementSerializer
+    
+class TaskFilter(filters.FilterSet):
+    class Meta:
+        model = Task
+        fields = ['id'] 
     
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = TaskFilter
+
+class TestViewSet(viewsets.ModelViewSet):
+    queryset = Test.objects.all()
+    serializer_class = TestSerializer
+
+# Представление для промежуточной модели TaskInTest (если необходимо)
+class TaskInTestViewSet(viewsets.ModelViewSet):
+    queryset = TaskInTest.objects.all()
+    serializer_class = TaskInTestSerializer
