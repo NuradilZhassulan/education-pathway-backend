@@ -2,6 +2,9 @@ from rest_framework import serializers
 from .models import Goal, Class, Section, Topic, Subtopic, KeyboardElement, Task, Test, TaskInTest
 import json
 from django.http import JsonResponse
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ClassSerializer(serializers.ModelSerializer):
@@ -93,18 +96,16 @@ class TestSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         tasks_data = validated_data.pop('taskintest_set', [])
+
+        # Обновляем сам тест
         instance.name = validated_data.get('name', instance.name)
         instance.save()
 
-        # Обновление существующих заданий в тесте
-        for task_data in tasks_data:
-            task_id = task_data.get('task').get('id')
-            task_in_test, created = TaskInTest.objects.update_or_create(
-                test=instance,
-                task_id=task_id,
-                defaults={
-                    'next_task_correct': task_data.get('next_task_correct'),
-                    'next_task_incorrect': task_data.get('next_task_incorrect'),
-                }
-            )
+        # Обновляем связанные задачи
+        if tasks_data:
+            # Пересоздаем задачи для теста, можно также обновить, если у задач есть идентификаторы
+            TaskInTest.objects.filter(test=instance).delete()
+            for task_data in tasks_data:
+                TaskInTest.objects.create(test=instance, **task_data)
+
         return instance

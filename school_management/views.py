@@ -94,10 +94,17 @@ class TaskViewSet(viewsets.ModelViewSet):
     serializer_class = TaskSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = TaskFilter
+    
+class TestFilter(filters.FilterSet):
+    class Meta:
+        model = Test
+        fields = ['id'] 
 
 class TestViewSet(viewsets.ModelViewSet):
     queryset = Test.objects.all()
     serializer_class = TestSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = TestFilter
 
 # Представление для промежуточной модели TaskInTest (если необходимо)
 class TaskInTestViewSet(viewsets.ModelViewSet):
