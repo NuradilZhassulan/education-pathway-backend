@@ -135,3 +135,6 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',   # Разрешить доступ с локального сервера разработки React
     'http://192.168.88.32:3000',  # Разрешить доступ с другого домена или порта
 ]
+
+import django_heroku
+django_heroku.settings(locals())
