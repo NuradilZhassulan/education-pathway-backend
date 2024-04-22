@@ -82,10 +82,11 @@ class TaskInTestSerializer(serializers.ModelSerializer):
 # Обновляем сериализатор для модели Test
 class TestSerializer(serializers.ModelSerializer):
     tasks = TaskInTestSerializer(source='taskintest_set', many=True)
+    goal = serializers.PrimaryKeyRelatedField(queryset=Goal.objects.all())
 
     class Meta:
         model = Test
-        fields = ['id', 'name', 'tasks']
+        fields = ['id', 'name', 'tasks', 'goal']
 
     def create(self, validated_data):
         tasks_data = validated_data.pop('taskintest_set')
@@ -96,16 +97,10 @@ class TestSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         tasks_data = validated_data.pop('taskintest_set', [])
-
-        # Обновляем сам тест
         instance.name = validated_data.get('name', instance.name)
+        instance.goal = validated_data.get('goal', instance.goal)
         instance.save()
-
-        # Обновляем связанные задачи
-        if tasks_data:
-            # Пересоздаем задачи для теста, можно также обновить, если у задач есть идентификаторы
-            TaskInTest.objects.filter(test=instance).delete()
-            for task_data in tasks_data:
-                TaskInTest.objects.create(test=instance, **task_data)
-
+        TaskInTest.objects.filter(test=instance).delete()
+        for task_data in tasks_data:
+            TaskInTest.objects.create(test=instance, **task_data)
         return instance

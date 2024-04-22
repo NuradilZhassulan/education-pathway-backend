@@ -48,8 +48,7 @@ class Task(models.Model):
 #Тесты
 class Test(models.Model):
     name = models.CharField(max_length=255)
-    # Прямая связь с TaskInTest для получения заданий в этом тесте
-    # Без использования ManyToManyField
+    goal = models.ForeignKey(Goal, on_delete=models.CASCADE, related_name='tests')
 
     def __str__(self):
         return self.name

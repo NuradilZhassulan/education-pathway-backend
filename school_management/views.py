@@ -96,9 +96,11 @@ class TaskViewSet(viewsets.ModelViewSet):
     filterset_class = TaskFilter
     
 class TestFilter(filters.FilterSet):
+    goal_id = filters.NumberFilter(field_name='goal__id')
+    
     class Meta:
         model = Test
-        fields = ['id'] 
+        fields = ['id', 'goal_id'] 
 
 class TestViewSet(viewsets.ModelViewSet):
     queryset = Test.objects.all()
