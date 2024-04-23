@@ -85,9 +85,11 @@ class KeyboardElementViewSet(viewsets.ModelViewSet):
     serializer_class = KeyboardElementSerializer
     
 class TaskFilter(filters.FilterSet):
+    subtopic = filters.NumberFilter(field_name='subtopic')
+    
     class Meta:
         model = Task
-        fields = ['id'] 
+        fields = ['id', 'subtopic'] 
     
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
