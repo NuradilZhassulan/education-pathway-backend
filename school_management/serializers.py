@@ -35,19 +35,17 @@ class TopicSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class SubtopicSerializer(serializers.ModelSerializer):
-    goals = serializers.SerializerMethodField()  # Изменяем на метод
+    goals = serializers.PrimaryKeyRelatedField(queryset=Goal.objects.all(), many=True, required=False)
 
     class Meta:
         model = Subtopic
         fields = ['id', 'name', 'topic_id', 'goals']
 
-    def get_goals(self, obj):
-        # Фильтрация goals в зависимости от параметра goal_id в запросе
-        goals = obj.goals.all()
-        goal_id = self.context['request'].query_params.get('goal_id')
-        if goal_id:
-            goals = goals.filter(id=goal_id)
-        return GoalSerializer(goals, many=True).data
+    def update(self, instance, validated_data):
+        goals = validated_data.pop('goals', None)
+        if goals is not None:
+            instance.goals.set(goals)
+        return super().update(instance, validated_data)
 
 class KeyboardElementSerializer(serializers.ModelSerializer):
     class Meta:
@@ -60,8 +58,13 @@ class TaskSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Task
-        fields = ['id', 'name', 'subtopic', 'description', 'correct_answers', 'solutions', 'hints', 'keyboard_elements']
-        
+        fields = ['id', 'name', 'subtopic', 'description', 'options', 'correct_option', 'solutions', 'hints', 'keyboard_elements']
+
+    def validate_correct_option(self, value):
+        if value not in ['A', 'B', 'C', 'D']:
+            raise serializers.ValidationError("Invalid correct option. It must be one of 'A', 'B', 'C', 'D'.")
+        return value
+            
 class TaskInTestSerializer(serializers.ModelSerializer):
     task = TaskSerializer(read_only=True)
     next_task_correct = TaskSerializer(read_only=True)

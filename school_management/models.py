@@ -37,7 +37,8 @@ class Task(models.Model):
     name = models.CharField(max_length=255)
     subtopic = models.ForeignKey(Subtopic, on_delete=models.CASCADE, related_name='tasks')
     description = models.TextField()
-    correct_answers = models.JSONField()  # использует JSON для хранения массива
+    options = models.JSONField(default=list)
+    correct_option = models.CharField(max_length=1)
     solutions = models.TextField()
     hints = models.TextField()
     keyboard_elements = models.ManyToManyField(KeyboardElement, related_name='tasks')

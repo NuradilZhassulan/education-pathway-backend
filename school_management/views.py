@@ -48,10 +48,11 @@ class TopicViewSet(viewsets.ModelViewSet):
 class SubtopicFilter(filters.FilterSet):
     topic_id = filters.NumberFilter(field_name='topic_id')
     goal_id = filters.NumberFilter(field_name='goals__id')
+    goals = filters.ModelMultipleChoiceFilter(queryset=Goal.objects.all(), field_name='goals', to_field_name='id')
 
     class Meta:
         model = Subtopic
-        fields = ['id']
+        fields = ['id', 'topic_id', 'goal_id', 'goals']
 
 class SubtopicViewSet(viewsets.ModelViewSet):
     queryset = Subtopic.objects.all()
@@ -60,13 +61,10 @@ class SubtopicViewSet(viewsets.ModelViewSet):
     filterset_class = SubtopicFilter
 
     def get_queryset(self):
-        """
-        Этот вид определяет `queryset` с динамическим фильтром, исключающим
-        Subtopics без активных целей, соответствующих goal_id.
-        """
-        queryset = super().get_queryset()  # Получаем изначальный queryset
+        queryset = super().get_queryset()
         goal_id = self.request.query_params.get('goal_id', None)
         topic_id = self.request.query_params.get('topic_id', None)
+        goals = self.request.query_params.getlist('goals', None)
 
         if goal_id and topic_id:
             queryset = queryset.filter(topic_id=topic_id, goals__id=goal_id)
@@ -74,6 +72,8 @@ class SubtopicViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(goals__id=goal_id)
         elif topic_id:
             queryset = queryset.filter(topic_id=topic_id)
+        elif goals:
+            queryset = queryset.filter(goals__id__in=goals)
 
         return queryset.distinct()
 
@@ -89,8 +89,8 @@ class TaskFilter(filters.FilterSet):
     
     class Meta:
         model = Task
-        fields = ['id', 'subtopic'] 
-    
+        fields = ['id', 'subtopic']
+
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
