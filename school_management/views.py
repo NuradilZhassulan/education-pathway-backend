@@ -2,6 +2,10 @@ from rest_framework import viewsets
 from .models import Goal, Class, Section, Topic, Subtopic, KeyboardElement, Task, Test, TaskInTest
 from .serializers import GoalSerializer, ClassSerializer, SectionSerializer, TopicSerializer, SubtopicSerializer, KeyboardElementSerializer, TaskSerializer, TestSerializer, TaskInTestSerializer
 from django_filters import rest_framework as filters
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
 class GoalViewSet(viewsets.ModelViewSet):
     queryset = Goal.objects.all()
@@ -114,3 +118,12 @@ class TestViewSet(viewsets.ModelViewSet):
 class TaskInTestViewSet(viewsets.ModelViewSet):
     queryset = TaskInTest.objects.all()
     serializer_class = TaskInTestSerializer
+    
+@csrf_exempt
+def upload_image(request):
+    if request.method == 'POST' and request.FILES.get('file'):
+        image = request.FILES['file']
+        path = default_storage.save('images/' + image.name, ContentFile(image.read()))
+        image_url = default_storage.url(path)
+        return JsonResponse({'link': image_url})
+    return JsonResponse({'error': 'Failed to upload image'}, status=400)
